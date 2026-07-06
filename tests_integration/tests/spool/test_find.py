@@ -241,7 +241,6 @@ def test_find_all_spools_limit_asc_offset_outside_range(spools: Fixture):  # noq
         "filament.spool_weight",
         "filament.article_number",
         "filament.comment",
-        "filament.settings_extruder_temp",
         "filament.settings_bed_temp",
         "filament.color_hex",
         "filament.vendor.id",

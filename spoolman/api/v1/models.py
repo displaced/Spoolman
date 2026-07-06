@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, PlainSerializer
+from pydantic import BaseModel, Field, PlainSerializer, model_validator
 
 from spoolman.database import models
 from spoolman.math import length_from_weight
@@ -100,6 +100,42 @@ class MultiColorDirection(Enum):
     LONGITUDINAL = "longitudinal"
 
 
+class TemperatureSpeedRange(BaseModel):
+    temperature: list[int | None] = Field(
+        min_length=2,
+        max_length=2,
+        description="Extruder temperature range in °C as [min, max].",
+        examples=[[200, 230]],
+    )
+    print_speed: list[int | None] = Field(
+        min_length=2,
+        max_length=2,
+        description="Print speed range in mm/s as [min, max].",
+        examples=[[40, 80]],
+    )
+
+    @model_validator(mode="after")  # type: ignore[]
+    def validate_ranges(self) -> "TemperatureSpeedRange":
+        """Validate list-style min/max ranges."""
+        temp_min, temp_max = self.temperature
+        if temp_min is not None and temp_min < 0:
+            raise ValueError("temperature min must be greater than or equal to 0")
+        if temp_max is not None and temp_max < 0:
+            raise ValueError("temperature max must be greater than or equal to 0")
+        if temp_min is not None and temp_max is not None and temp_min > temp_max:
+            raise ValueError("temperature min must be less than or equal to max")
+
+        speed_min, speed_max = self.print_speed
+        if speed_min is not None and speed_min < 0:
+            raise ValueError("print_speed min must be greater than or equal to 0")
+        if speed_max is not None and speed_max < 0:
+            raise ValueError("print_speed max must be greater than or equal to 0")
+        if speed_min is not None and speed_max is not None and speed_min > speed_max:
+            raise ValueError("print_speed min must be less than or equal to max")
+
+        return self
+
+
 class Filament(BaseModel):
     id: int = Field(description="Unique internal ID of this filament type.")
     registered: SpoolmanDateTime = Field(description="When the filament was registered in the database. UTC Timezone.")
@@ -146,17 +182,15 @@ class Filament(BaseModel):
         description="Free text comment about this filament type.",
         examples=[""],
     )
-    settings_extruder_temp: int | None = Field(
-        None,
-        ge=0,
-        description="Overridden extruder temperature, in °C.",
-        examples=[210],
-    )
     settings_bed_temp: int | None = Field(
         None,
         ge=0,
         description="Overridden bed temperature, in °C.",
         examples=[60],
+    )
+    temperature_speed_ranges: list[TemperatureSpeedRange] = Field(
+        default_factory=list,
+        description="List of temperature-to-print-speed ranges.",
     )
     color_hex: str | None = Field(
         None,
@@ -214,8 +248,14 @@ class Filament(BaseModel):
             spool_weight=item.spool_weight,
             article_number=item.article_number,
             comment=item.comment,
-            settings_extruder_temp=item.settings_extruder_temp,
             settings_bed_temp=item.settings_bed_temp,
+            temperature_speed_ranges=[
+                TemperatureSpeedRange(
+                    temperature=[range_item.temperature_min, range_item.temperature_max],
+                    print_speed=[range_item.print_speed_min, range_item.print_speed_max],
+                )
+                for range_item in item.temperature_speed_ranges
+            ],
             color_hex=item.color_hex,
             multi_color_hexes=item.multi_color_hexes,
             multi_color_direction=(

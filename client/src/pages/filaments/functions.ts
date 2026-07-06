@@ -31,7 +31,9 @@ export async function createFilamentFromExternal(externalFilament: ExternalFilam
     color_hex: color_hex,
     multi_color_hexes: multi_color_hexes,
     multi_color_direction: multi_color_direction,
-    settings_extruder_temp: externalFilament.extruder_temp || undefined,
+    temperature_speed_ranges: externalFilament.extruder_temp
+      ? [{ temperature: [externalFilament.extruder_temp, externalFilament.extruder_temp], print_speed: [null, null] }]
+      : undefined,
     settings_bed_temp: externalFilament.bed_temp || undefined,
     external_id: externalFilament.id,
   };

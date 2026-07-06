@@ -157,7 +157,7 @@ const SpoolQRCodePrintingDialog = ({ spoolIds }: SpoolQRCodePrintingDialog) => {
     `**{filament.vendor.name} - {filament.name}
 #{id} - {filament.material}**
 Spool Weight: {filament.spool_weight} g
-{ET: {filament.settings_extruder_temp} °C}
+{Temp/Speed: {filament.temperature_speed_ranges}}
 {BT: {filament.settings_bed_temp} °C}
 {Lot Nr: {lot_nr}}
 {{comment}}
@@ -199,7 +199,7 @@ Spool Weight: {filament.spool_weight} g
     { tag: "filament.spool_weight" },
     { tag: "filament.article_number" },
     { tag: "filament.comment" },
-    { tag: "filament.settings_extruder_temp" },
+    { tag: "filament.temperature_speed_ranges" },
     { tag: "filament.settings_bed_temp" },
     { tag: "filament.color_hex" },
     { tag: "filament.multi_color_hexes" },

@@ -63,7 +63,7 @@ const allColumns: (keyof IFilamentCollapsed & string)[] = [
   "weight",
   "spool_weight",
   "article_number",
-  "settings_extruder_temp",
+  "temperature_speed_ranges",
   "settings_bed_temp",
   "registered",
   "comment",
@@ -308,14 +308,26 @@ export const FilamentList = () => {
             filterValueQuery: useSpoolmanArticleNumbers(),
             width: 130,
           }),
-          NumberColumn({
-            ...commonProps,
-            id: "settings_extruder_temp",
-            i18ncat: "filament",
-            unit: "°C",
-            maxDecimals: 0,
-            width: 100,
-          }),
+          {
+            key: "temperature_speed_ranges",
+            title: t("filament.fields.temperature_speed_ranges"),
+            dataIndex: "temperature_speed_ranges",
+            width: 210,
+            render: (_: unknown, obj: IFilamentCollapsed) => {
+              if (!obj.temperature_speed_ranges?.length) {
+                return "";
+              }
+              return obj.temperature_speed_ranges
+                .map((rangeItem) => {
+                  const tempMin = rangeItem.temperature?.[0] ?? "";
+                  const tempMax = rangeItem.temperature?.[1] ?? "";
+                  const speedMin = rangeItem.print_speed?.[0] ?? "";
+                  const speedMax = rangeItem.print_speed?.[1] ?? "";
+                  return `${tempMin}-${tempMax} °C / ${speedMin}-${speedMax} mm/s`;
+                })
+                .join(", ");
+            },
+          },
           NumberColumn({
             ...commonProps,
             id: "settings_bed_temp",

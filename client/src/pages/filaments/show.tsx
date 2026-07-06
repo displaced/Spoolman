@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useNavigate } from "react-router";
 import { ExtraFieldDisplay } from "../../components/extraFields";
-import { NumberFieldUnit } from "../../components/numberField";
+import { NumberFieldUnit, NumberFieldUnitRange } from "../../components/numberField";
 import SpoolIcon from "../../components/spoolIcon";
 import { enrichText } from "../../utils/parsing";
 import { EntityType, useGetFields } from "../../utils/queryFields";
@@ -129,11 +129,16 @@ export const FilamentShow = () => {
           minimumFractionDigits: 1,
         }}
       />
-      <Title level={5}>{t("filament.fields.settings_extruder_temp")}</Title>
-      {!record?.settings_extruder_temp ? (
+      <Title level={5}>{t("filament.fields.temperature_speed_ranges")}</Title>
+      {!record?.temperature_speed_ranges?.length ? (
         <TextField value="Not Set" />
       ) : (
-        <NumberFieldUnit value={record?.settings_extruder_temp ?? ""} unit="°C" />
+        record.temperature_speed_ranges.map((rangeItem, index) => (
+          <div key={index}>
+            <NumberFieldUnitRange value={rangeItem.temperature} unit="°C" /> /{" "}
+            <NumberFieldUnitRange value={rangeItem.print_speed} unit="mm/s" />
+          </div>
+        ))
       )}
       <Title level={5}>{t("filament.fields.settings_bed_temp")}</Title>
       {!record?.settings_bed_temp ? (

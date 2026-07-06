@@ -10,7 +10,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload
 
-from spoolman.api.v1.models import EventType, Filament, FilamentEvent, MultiColorDirection
+from spoolman.api.v1.models import (
+    EventType,
+    Filament,
+    FilamentEvent,
+    MultiColorDirection,
+    TemperatureSpeedRange,
+)
 from spoolman.database import models, vendor
 from spoolman.database.utils import (
     SortOrder,
@@ -38,8 +44,8 @@ async def create(
     spool_weight: float | None = None,
     article_number: str | None = None,
     comment: str | None = None,
-    settings_extruder_temp: int | None = None,
     settings_bed_temp: int | None = None,
+    temperature_speed_ranges: list[TemperatureSpeedRange] | None = None,
     color_hex: str | None = None,
     multi_color_hexes: str | None = None,
     multi_color_direction: MultiColorDirection | None = None,
@@ -66,8 +72,17 @@ async def create(
         spool_weight=spool_weight,
         article_number=article_number,
         comment=comment,
-        settings_extruder_temp=settings_extruder_temp,
         settings_bed_temp=settings_bed_temp,
+        temperature_speed_ranges=[
+            models.FilamentTemperatureSpeedRange(
+                idx=idx,
+                temperature_min=range_item.temperature[0],
+                temperature_max=range_item.temperature[1],
+                print_speed_min=range_item.print_speed[0],
+                print_speed_max=range_item.print_speed[1],
+            )
+            for idx, range_item in enumerate(temperature_speed_ranges or [])
+        ],
         color_hex=color_hex,
         multi_color_hexes=multi_color_hexes,
         multi_color_direction=multi_color_direction.value if multi_color_direction is not None else None,
@@ -172,6 +187,17 @@ async def update(
             filament.extra = [models.FilamentField(key=k, value=v) for k, v in v.items()]
         elif k == "multi_color_direction":
             filament.multi_color_direction = v.value if v is not None else None
+        elif k == "temperature_speed_ranges":
+            filament.temperature_speed_ranges = [
+                models.FilamentTemperatureSpeedRange(
+                    idx=idx,
+                    temperature_min=range_item.temperature[0],
+                    temperature_max=range_item.temperature[1],
+                    print_speed_min=range_item.print_speed[0],
+                    print_speed_max=range_item.print_speed[1],
+                )
+                for idx, range_item in enumerate(v or [])
+            ]
         else:
             setattr(filament, k, v)
     await db.commit()

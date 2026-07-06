@@ -19,7 +19,7 @@ def test_get_filament(random_vendor: dict[str, Any]):
     spool_weight = 250
     article_number = "123456789"
     comment = "abcdefghåäö"
-    settings_extruder_temp = 200
+    temperature_speed_ranges = [{"temperature": [200, 220], "print_speed": [40, 80]}]
     settings_bed_temp = 60
     color_hex = "FF0000"
     result = httpx.post(
@@ -35,7 +35,7 @@ def test_get_filament(random_vendor: dict[str, Any]):
             "spool_weight": spool_weight,
             "article_number": article_number,
             "comment": comment,
-            "settings_extruder_temp": settings_extruder_temp,
+            "temperature_speed_ranges": temperature_speed_ranges,
             "settings_bed_temp": settings_bed_temp,
             "color_hex": color_hex,
         },
@@ -66,7 +66,7 @@ def test_get_filament(random_vendor: dict[str, Any]):
             "spool_weight": spool_weight,
             "article_number": article_number,
             "comment": comment,
-            "settings_extruder_temp": settings_extruder_temp,
+            "temperature_speed_ranges": temperature_speed_ranges,
             "settings_bed_temp": settings_bed_temp,
             "color_hex": color_hex,
         },

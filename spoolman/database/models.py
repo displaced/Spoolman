@@ -46,8 +46,13 @@ class Filament(Base):
     spool_weight: Mapped[float | None] = mapped_column(comment="The weight of an empty spool.")
     article_number: Mapped[str | None] = mapped_column(String(64))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    settings_extruder_temp: Mapped[int | None] = mapped_column(comment="Overridden extruder temperature.")
     settings_bed_temp: Mapped[int | None] = mapped_column(comment="Overridden bed temperature.")
+    temperature_speed_ranges: Mapped[list["FilamentTemperatureSpeedRange"]] = relationship(
+        back_populates="filament",
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy="joined",
+        order_by="FilamentTemperatureSpeedRange.idx",
+    )
     color_hex: Mapped[str | None] = mapped_column(String(8))
     multi_color_hexes: Mapped[str | None] = mapped_column(String(128))
     multi_color_direction: Mapped[str | None] = mapped_column(String(16))
@@ -57,6 +62,18 @@ class Filament(Base):
         cascade="save-update, merge, delete, delete-orphan",
         lazy="joined",
     )
+
+
+class FilamentTemperatureSpeedRange(Base):
+    __tablename__ = "filament_temperature_speed_range"
+
+    filament_id: Mapped[int] = mapped_column(ForeignKey("filament.id"), primary_key=True, index=True)
+    filament: Mapped["Filament"] = relationship(back_populates="temperature_speed_ranges")
+    idx: Mapped[int] = mapped_column(Integer, primary_key=True)
+    temperature_min: Mapped[int | None] = mapped_column(comment="Minimum extruder temperature in °C.")
+    temperature_max: Mapped[int | None] = mapped_column(comment="Maximum extruder temperature in °C.")
+    print_speed_min: Mapped[int | None] = mapped_column(comment="Minimum print speed in mm/s.")
+    print_speed_max: Mapped[int | None] = mapped_column(comment="Maximum print speed in mm/s.")
 
 
 class Spool(Base):

@@ -25,6 +25,7 @@
         "clone": "Clone",
         "archive": "Archive",
         "unArchive": "Unarchive",
+        "remove": "Remove",
         "hideArchived": "Hide Archived",
         "showArchived": "Show Archived",
         "notAccessTitle": "You don't have permission to access",
@@ -229,7 +230,9 @@
             "article_number": "Article Number",
             "registered": "Registered",
             "comment": "Comment",
-            "settings_extruder_temp": "Extruder Temp",
+            "temperature_speed_ranges": "Temperature / Speed Ranges",
+            "temperature_range": "Temperature Range",
+            "print_speed_range": "Print Speed Range",
             "settings_bed_temp": "Bed Temp",
             "color_hex": "Color",
             "single_color": "Single",
@@ -259,10 +262,14 @@
         "form": {
             "filament_updated": "This filament has been updated by someone/something else since you opened this page. Saving will overwrite those changes!",
             "import_external": "Import from External",
-            "import_external_description": "Select a filament in the list to automatically populate its details in the filament creation form. This will overwrite any data you have entered in the form.<br><br>A Manufacturer object will be created automatically when you click Ok, if necessary."
+            "import_external_description": "Select a filament in the list to automatically populate its details in the filament creation form. This will overwrite any data you have entered in the form.<br><br>A Manufacturer object will be created automatically when you click Ok, if necessary.",
+            "validation": {
+                "min_lte_max": "Minimum value must be less than or equal to maximum value."
+            }
         },
         "buttons": {
-            "add_spool": "Add Spool"
+            "add_spool": "Add Spool",
+            "add_temperature_speed_range": "Add Temperature / Speed Range"
         }
     },
     "vendor": {

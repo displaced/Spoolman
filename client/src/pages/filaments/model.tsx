@@ -1,5 +1,10 @@
 import { IVendor } from "../vendors/model";
 
+export interface ITemperatureSpeedRange {
+  temperature: [number | null, number | null];
+  print_speed: [number | null, number | null];
+}
+
 export interface IFilament {
   id: number;
   registered: string;
@@ -13,8 +18,8 @@ export interface IFilament {
   spool_weight?: number;
   article_number?: string;
   comment?: string;
-  settings_extruder_temp?: number;
   settings_bed_temp?: number;
+  temperature_speed_ranges?: ITemperatureSpeedRange[];
   color_hex?: string;
   multi_color_hexes?: string;
   multi_color_direction?: string;

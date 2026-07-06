@@ -23,7 +23,7 @@ def test_update_filament(random_vendor: dict[str, Any]):
             "spool_weight": 250,
             "article_number": "123456789",
             "comment": "abcdefghåäö",
-            "settings_extruder_temp": 200,
+            "temperature_speed_ranges": [{"temperature": [200, 220], "print_speed": [40, 80]}],
             "settings_bed_temp": 60,
             "color_hex": "FF0000",
             "external_id": "external_id1",
@@ -42,7 +42,7 @@ def test_update_filament(random_vendor: dict[str, Any]):
     new_spool_weight = 123
     new_article_number = "987654321"
     new_comment = "test"
-    new_settings_extruder_temp = 210
+    new_temperature_speed_ranges = [{"temperature": [210, 235], "print_speed": [30, 60]}]
     new_settings_bed_temp = 70
     new_color_hex = "00FF00"
     new_external_id = "external_id2"
@@ -59,7 +59,7 @@ def test_update_filament(random_vendor: dict[str, Any]):
             "spool_weight": new_spool_weight,
             "article_number": new_article_number,
             "comment": new_comment,
-            "settings_extruder_temp": new_settings_extruder_temp,
+            "temperature_speed_ranges": new_temperature_speed_ranges,
             "settings_bed_temp": new_settings_bed_temp,
             "color_hex": new_color_hex,
             "external_id": new_external_id,
@@ -84,7 +84,7 @@ def test_update_filament(random_vendor: dict[str, Any]):
             "spool_weight": new_spool_weight,
             "article_number": new_article_number,
             "comment": new_comment,
-            "settings_extruder_temp": new_settings_extruder_temp,
+            "temperature_speed_ranges": new_temperature_speed_ranges,
             "settings_bed_temp": new_settings_bed_temp,
             "color_hex": new_color_hex,
             "external_id": new_external_id,
@@ -154,7 +154,7 @@ def test_update_filament_cant_set_none(random_vendor: dict[str, Any]):
             "spool_weight": 250,
             "article_number": "123456789",
             "comment": "abcdefghåäö",
-            "settings_extruder_temp": 200,
+            "temperature_speed_ranges": [{"temperature": [200, 220], "print_speed": [40, 80]}],
             "settings_bed_temp": 60,
             "color_hex": "FF0000",
             "external_id": "external_id1",

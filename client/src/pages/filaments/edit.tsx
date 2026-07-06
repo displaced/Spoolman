@@ -1,11 +1,13 @@
 import { Edit, useForm, useSelect } from "@refinedev/antd";
 import { HttpError, useTranslate } from "@refinedev/core";
-import { Alert, ColorPicker, DatePicker, Form, Input, InputNumber, message, Radio, Select, Typography } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { Alert, Button, ColorPicker, DatePicker, Form, Input, InputNumber, message, Radio, Select, Typography } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { ExtraFieldFormItem, ParsedExtras, StringifiedExtras } from "../../components/extraFields";
 import { MultiColorPicker } from "../../components/multiColorPicker";
+import { InputNumberRange } from "../../components/inputNumberRange";
 import { formatNumberOnUserInput, numberParser, numberParserAllowEmpty } from "../../utils/parsing";
 import { EntityType, useGetFields } from "../../utils/queryFields";
 import { getCurrencySymbol, useCurrency } from "../../utils/settings";
@@ -289,19 +291,60 @@ export const FilamentEdit = () => {
         >
           <InputNumber addonAfter="g" precision={1} />
         </Form.Item>
-        <Form.Item
-          label={t("filament.fields.settings_extruder_temp")}
-          name={["settings_extruder_temp"]}
-          rules={[
-            {
-              required: false,
-              type: "number",
-              min: 0,
-            },
-          ]}
-        >
-          <InputNumber addonAfter="°C" precision={0} />
-        </Form.Item>
+        <Typography.Title level={5}>{t("filament.fields.temperature_speed_ranges")}</Typography.Title>
+        <Form.List name={["temperature_speed_ranges"]}>
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map((field) => (
+                <div key={field.key} style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                  <Form.Item
+                    label={t("filament.fields.temperature_range")}
+                    name={[field.name, "temperature"]}
+                    rules={[
+                      {
+                        validator: async (_rule, value: [number | null, number | null] | undefined) => {
+                          const [min, max] = value ?? [null, null];
+                          if (min !== null && min !== undefined && max !== null && max !== undefined && min > max) {
+                            throw new Error(t("filament.form.validation.min_lte_max"));
+                          }
+                        },
+                      },
+                    ]}
+                  >
+                    <InputNumberRange unit="°C" precision={0} />
+                  </Form.Item>
+                  <Form.Item
+                    label={t("filament.fields.print_speed_range")}
+                    name={[field.name, "print_speed"]}
+                    rules={[
+                      {
+                        validator: async (_rule, value: [number | null, number | null] | undefined) => {
+                          const [min, max] = value ?? [null, null];
+                          if (min !== null && min !== undefined && max !== null && max !== undefined && min > max) {
+                            throw new Error(t("filament.form.validation.min_lte_max"));
+                          }
+                        },
+                      },
+                    ]}
+                  >
+                    <InputNumberRange unit="mm/s" precision={0} />
+                  </Form.Item>
+                  <Button danger icon={<MinusCircleOutlined />} onClick={() => remove(field.name)}>
+                    {t("buttons.remove")}
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => add({ temperature: [null, null], print_speed: [null, null] })}
+                block
+              >
+                {t("filament.buttons.add_temperature_speed_range")}
+              </Button>
+            </>
+          )}
+        </Form.List>
         <Form.Item
           label={t("filament.fields.settings_bed_temp")}
           name={["settings_bed_temp"]}

@@ -232,7 +232,6 @@ def test_find_all_filaments_limit_asc_offset_outside_range(filaments: Fixture): 
         "spool_weight",
         "article_number",
         "comment",
-        "settings_extruder_temp",
         "settings_bed_temp",
         "color_hex",
         "vendor.id",

@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from spoolman.api.v1.models import Filament, FilamentEvent, Message, MultiColorDirection
+from spoolman.api.v1.models import Filament, FilamentEvent, Message, MultiColorDirection, TemperatureSpeedRange
 from spoolman.database import filament
 from spoolman.database.database import get_db_session
 from spoolman.database.utils import SortOrder
@@ -72,17 +72,18 @@ class FilamentParameters(BaseModel):
         description="Free text comment about this filament type.",
         examples=[""],
     )
-    settings_extruder_temp: int | None = Field(
-        None,
-        ge=0,
-        description="Overridden extruder temperature, in °C.",
-        examples=[210],
-    )
     settings_bed_temp: int | None = Field(
         None,
         ge=0,
         description="Overridden bed temperature, in °C.",
         examples=[60],
+    )
+    temperature_speed_ranges: list[TemperatureSpeedRange] | None = Field(
+        None,
+        description=(
+            "List of temperature-to-print-speed ranges. "
+            "Each range contains two integer-range values: temperature=[min,max], print_speed=[min,max]."
+        ),
     )
     color_hex: str | None = Field(
         None,
@@ -452,8 +453,8 @@ async def create(  # noqa: ANN201
         spool_weight=body.spool_weight,
         article_number=body.article_number,
         comment=body.comment,
-        settings_extruder_temp=body.settings_extruder_temp,
         settings_bed_temp=body.settings_bed_temp,
+        temperature_speed_ranges=body.temperature_speed_ranges,
         color_hex=body.color_hex,
         multi_color_hexes=body.multi_color_hexes,
         multi_color_direction=body.multi_color_direction,
@@ -484,6 +485,8 @@ async def update(  # noqa: ANN201
     body: FilamentUpdateParameters,
 ):
     patch_data = body.model_dump(exclude_unset=True)
+    if "temperature_speed_ranges" in patch_data:
+        patch_data["temperature_speed_ranges"] = body.temperature_speed_ranges
 
     if body.extra:
         all_fields = await get_extra_fields(db, EntityType.filament)
