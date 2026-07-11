@@ -4,6 +4,7 @@ set -euo pipefail
 SPOOLMAN_GH_REPO="${SPOOLMAN_GH_REPO:-displaced/Spoolman}"
 SPOOLMAN_GH_BRANCH="${SPOOLMAN_GH_BRANCH:-master}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.14}"
+SPOOLMAN_API_URL="${SPOOLMAN_API_URL:-/api/v1}"
 
 APP_DIR="/opt/spoolman"
 BAK_DIR="/opt/spoolman_bak"
@@ -61,7 +62,7 @@ build_client_if_needed() {
   ensure_node_20
   cd "${APP_DIR}/client"
   npm ci
-  if ! NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=768}" npm run build; then
+  if ! NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=768}" VITE_APIURL="${SPOOLMAN_API_URL}" npm run build; then
     if copy_client_dist_from_backup; then
       info "Client build failed, used backup dist instead"
       return
@@ -173,3 +174,4 @@ ok "Service started"
 ok "Fork install complete"
 echo "Repo:   ${SPOOLMAN_GH_REPO}"
 echo "Branch: ${SPOOLMAN_GH_BRANCH}"
+echo "API URL: ${SPOOLMAN_API_URL}"
