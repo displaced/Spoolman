@@ -79,7 +79,7 @@ build_client_if_needed() {
 
 ensure_backend_runtime() {
   info "Verifying backend runtime dependencies"
-  if .venv/bin/python -c "import uvicorn, fastapi" >/dev/null 2>&1; then
+  if .venv/bin/python -c "import uvicorn, fastapi, alembic" >/dev/null 2>&1; then
     ok "Backend runtime dependencies available"
     return
   fi
@@ -87,7 +87,7 @@ ensure_backend_runtime() {
   info "Locked sync appears incomplete, retrying unlocked sync"
   uv sync
 
-  if ! .venv/bin/python -c "import uvicorn, fastapi" >/dev/null 2>&1; then
+  if ! .venv/bin/python -c "import uvicorn, fastapi, alembic" >/dev/null 2>&1; then
     err "Backend runtime dependencies are still missing after fallback sync"
     exit 1
   fi

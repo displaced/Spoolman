@@ -2,6 +2,7 @@
 
 import logging
 import subprocess
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -175,7 +176,7 @@ async def startup() -> None:
     # There is some issue with the uvicorn worker that causes the process to hang when running alembic directly.
     # See: https://github.com/sqlalchemy/alembic/discussions/1155
     project_root = Path(__file__).parent.parent
-    subprocess.run(["alembic", "upgrade", "head"], check=True, cwd=project_root)  # noqa: ASYNC221, S607
+    subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], check=True, cwd=project_root)  # noqa: ASYNC221, S607
 
     # Setup scheduler
     schedule = Scheduler()
