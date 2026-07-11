@@ -29,6 +29,7 @@ fi
 
 if [[ -z "${TARGET_CTID}" ]]; then
   info "Launching official PMCS Spoolman script to create the container"
+  export var_ram="${var_ram:-2048}"
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/spoolman.sh)"
 
   echo

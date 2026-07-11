@@ -41,11 +41,30 @@ copy_client_dist_from_backup() {
     mkdir -p "${APP_DIR}/client"
     rm -rf "${APP_DIR}/client/dist"
     cp -a "${BAK_DIR}/client/dist" "${APP_DIR}/client/dist"
-    ok "Reused client dist from backup"
-    return 0
+    if validate_client_dist "${APP_DIR}/client/dist"; then
+      ok "Reused client dist from backup"
+      return 0
+    fi
+
+    info "Backup client dist is invalid for this install"
+    rm -rf "${APP_DIR}/client/dist"
   fi
 
   return 1
+}
+
+validate_client_dist() {
+  local dist_dir="$1"
+
+  if [[ ! -d "${dist_dir}" ]]; then
+    return 1
+  fi
+
+  if grep -R -E "App was built without an API URL|VITE_APIURL is not set" "${dist_dir}" >/dev/null 2>&1; then
+    return 1
+  fi
+
+  return 0
 }
 
 build_client_if_needed() {
@@ -60,9 +79,16 @@ build_client_if_needed() {
       return
     fi
 
-    err "Client build failed and no backup dist is available"
+    err "Client build failed and no valid backup dist is available"
+    err "Increase LXC memory (recommended 2048 MB+) and rerun update"
     exit 1
   fi
+
+  if ! validate_client_dist "${APP_DIR}/client/dist"; then
+    err "Built client dist is invalid (missing API URL)"
+    exit 1
+  fi
+
   ok "Client dist built"
 }
 
