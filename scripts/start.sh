@@ -36,4 +36,9 @@ set +o allexport
 # Start Spoolman using pdm run
 #
 echo -e "${GREEN}Starting Spoolman...${NC}"
-uvicorn spoolman.main:app --host $SPOOLMAN_HOST --port $SPOOLMAN_PORT
+if [ ! -x ".venv/bin/python" ]; then
+    echo -e "${ORANGE}.venv/bin/python not found or not executable.${NC}"
+    exit 1
+fi
+
+exec .venv/bin/python -m uvicorn spoolman.main:app --host "$SPOOLMAN_HOST" --port "$SPOOLMAN_PORT"
