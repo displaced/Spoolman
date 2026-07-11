@@ -19,6 +19,31 @@ info() { echo -e "${YELLOW}[INFO]${NC} $*"; }
 ok() { echo -e "${GREEN}[OK]${NC}   $*"; }
 err() { echo -e "${RED}[ERR]${NC}  $*" >&2; }
 
+node_heap_options() {
+  if [[ -n "${NODE_OPTIONS:-}" ]]; then
+    echo "${NODE_OPTIONS}"
+    return
+  fi
+
+  local mem_mb
+  mem_mb="$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)"
+  if [[ -z "${mem_mb}" || "${mem_mb}" -le 0 ]]; then
+    echo "--max-old-space-size=1024"
+    return
+  fi
+
+  # Keep headroom for OS and Python; cap Node heap at 4096 MB.
+  local heap_mb=$(( mem_mb * 70 / 100 ))
+  if [[ "${heap_mb}" -lt 768 ]]; then
+    heap_mb=768
+  fi
+  if [[ "${heap_mb}" -gt 4096 ]]; then
+    heap_mb=4096
+  fi
+
+  echo "--max-old-space-size=${heap_mb}"
+}
+
 ensure_node_20() {
   local need_node="yes"
   if command -v node >/dev/null 2>&1; then
@@ -77,7 +102,10 @@ build_client_if_needed() {
   rm -rf "${NEW_DIR}/client/dist"
   cd "${NEW_DIR}/client"
   npm ci
-  if ! NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=768}" VITE_APIURL="${SPOOLMAN_API_URL}" npm run build; then
+  local build_node_options
+  build_node_options="$(node_heap_options)"
+  info "Using NODE_OPTIONS=${build_node_options} for frontend build"
+  if ! NODE_OPTIONS="${build_node_options}" VITE_APIURL="${SPOOLMAN_API_URL}" npm run build; then
     if copy_client_dist_from_current; then
       info "Client build failed, used previous dist instead"
       return
