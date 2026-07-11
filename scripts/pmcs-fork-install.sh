@@ -49,17 +49,9 @@ copy_client_dist_from_backup() {
 }
 
 build_client_if_needed() {
-  if [[ -d "${APP_DIR}/client/dist" ]]; then
-    ok "Client dist already present"
-    return
-  fi
-
-  if copy_client_dist_from_backup; then
-    return
-  fi
-
   info "Building client/dist"
   ensure_node_20
+  rm -rf "${APP_DIR}/client/dist"
   cd "${APP_DIR}/client"
   npm ci
   if ! NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=768}" VITE_APIURL="${SPOOLMAN_API_URL}" npm run build; then
