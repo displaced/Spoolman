@@ -17,6 +17,37 @@ info() { echo -e "${YELLOW}[INFO]${NC} $*"; }
 ok() { echo -e "${GREEN}[OK]${NC}   $*"; }
 err() { echo -e "${RED}[ERR]${NC}  $*" >&2; }
 
+ensure_node_20() {
+  local need_node="yes"
+  if command -v node >/dev/null 2>&1; then
+    local major
+    major="$(node -v | sed 's/^v//' | cut -d. -f1)"
+    if [[ "${major}" -ge 20 ]]; then
+      need_node="no"
+    fi
+  fi
+
+  if [[ "${need_node}" == "yes" ]]; then
+    info "Installing Node.js 20.x for client build"
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs
+  fi
+}
+
+build_client_if_needed() {
+  if [[ -d "${APP_DIR}/client/dist" ]]; then
+    ok "Client dist already present"
+    return
+  fi
+
+  info "Building client/dist"
+  ensure_node_20
+  cd "${APP_DIR}/client"
+  npm ci
+  npm run build
+  ok "Client dist built"
+}
+
 if [[ $EUID -ne 0 ]]; then
   err "Run as root inside the container."
   exit 1
@@ -59,6 +90,8 @@ uv python install "${PYTHON_VERSION}" >/dev/null 2>&1 || true
 uv sync --locked --no-install-project
 uv sync --locked
 ok "Dependencies synced"
+
+build_client_if_needed
 
 if [[ -f "${BAK_DIR}/.env" ]]; then
   cp "${BAK_DIR}/.env" "${APP_DIR}/.env"
