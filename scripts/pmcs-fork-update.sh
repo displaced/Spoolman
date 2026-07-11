@@ -38,9 +38,26 @@ ensure_node_20() {
   fi
 }
 
+copy_client_dist_from_current() {
+  if [[ -d "${APP_DIR}/client/dist" ]]; then
+    info "Reusing existing client/dist from current install"
+    mkdir -p "${NEW_DIR}/client"
+    rm -rf "${NEW_DIR}/client/dist"
+    cp -a "${APP_DIR}/client/dist" "${NEW_DIR}/client/dist"
+    ok "Reused client dist from current install"
+    return 0
+  fi
+
+  return 1
+}
+
 build_client_if_needed() {
   if [[ -d "${NEW_DIR}/client/dist" ]]; then
     ok "Client dist already present"
+    return
+  fi
+
+  if copy_client_dist_from_current; then
     return
   fi
 
@@ -48,7 +65,15 @@ build_client_if_needed() {
   ensure_node_20
   cd "${NEW_DIR}/client"
   npm ci
-  npm run build
+  if ! NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=768}" npm run build; then
+    if copy_client_dist_from_current; then
+      info "Client build failed, used previous dist instead"
+      return
+    fi
+
+    err "Client build failed and no previous dist is available"
+    exit 1
+  fi
   ok "Client dist built"
 }
 
