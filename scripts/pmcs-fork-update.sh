@@ -77,6 +77,24 @@ build_client_if_needed() {
   ok "Client dist built"
 }
 
+ensure_backend_runtime() {
+  info "Verifying backend runtime dependencies"
+  if .venv/bin/python -c "import uvicorn, fastapi" >/dev/null 2>&1; then
+    ok "Backend runtime dependencies available"
+    return
+  fi
+
+  info "Locked sync appears incomplete, retrying unlocked sync"
+  uv sync
+
+  if ! .venv/bin/python -c "import uvicorn, fastapi" >/dev/null 2>&1; then
+    err "Backend runtime dependencies are still missing after fallback sync"
+    exit 1
+  fi
+
+  ok "Backend runtime dependencies repaired"
+}
+
 if [[ $EUID -ne 0 ]]; then
   err "Run as root inside the container."
   exit 1
@@ -111,6 +129,7 @@ cd "${NEW_DIR}"
 uv python install "${PYTHON_VERSION}" >/dev/null 2>&1 || true
 uv sync --locked --no-install-project
 uv sync --locked
+ensure_backend_runtime
 
 build_client_if_needed
 
