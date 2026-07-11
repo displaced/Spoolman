@@ -25,6 +25,9 @@ fi
 echo -e "${GREEN}Activating .venv...${NC}"
 source .venv/bin/activate
 
+# Ensure console scripts from the venv (e.g. alembic) are resolvable
+export PATH="$(pwd)/.venv/bin:${PATH}"
+
 #
 # Load envvars from .env file
 #
