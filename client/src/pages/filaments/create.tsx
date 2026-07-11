@@ -316,7 +316,10 @@ export const FilamentCreate = (props: IResourceComponentsProps & CreateOrClonePr
           <InputNumber addonAfter="g" precision={1} />
         </Form.Item>
         <Typography.Title level={5}>{t("filament.fields.temperature_speed_ranges")}</Typography.Title>
-        <Form.List name={["temperature_speed_ranges"]}>
+        <Form.List
+          name={["temperature_speed_ranges"]}
+          initialValue={[{ temperature: [null, null], print_speed: [null, null] }]}
+        >
           {(fields, { add, remove }) => (
             <>
               {fields.map((field) => (
