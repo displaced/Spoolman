@@ -58,8 +58,59 @@ interface GenericObject {
   extra: { [key: string]: string };
 }
 
+interface TemperatureSpeedRange {
+  temperature?: [number | null, number | null];
+  print_speed?: [number | null, number | null];
+}
+
+function formatNumericRange(value: [number | null, number | null] | undefined, unit: string): string {
+  if (!value || value.length !== 2) {
+    return "?";
+  }
+
+  const [min, max] = value;
+  const minPart = min === null || min === undefined ? "?" : String(min);
+  const maxPart = max === null || max === undefined ? "?" : String(max);
+  return `${minPart}-${maxPart} ${unit}`;
+}
+
+function formatTagValue(tag: string, value: unknown): string {
+  if (value === null || value === undefined) {
+    return "?";
+  }
+
+  if (tag === "filament.temperature_speed_ranges" && Array.isArray(value)) {
+    const ranges = value as TemperatureSpeedRange[];
+    if (ranges.length === 0) {
+      return "?";
+    }
+
+    return ranges
+      .map((range) => {
+        const temp = formatNumericRange(range.temperature, "°C");
+        const speed = formatNumericRange(range.print_speed, "mm/s");
+        return `${temp} / ${speed}`;
+      })
+      .join(", ");
+  }
+
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getTagValue(tag: string, obj: GenericObject): any {
+  if (tag.trim() === "") {
+    return obj;
+  }
+
   // Split tag by .
   const tagParts = tag.split(".");
   if (tagParts[0] === "extra") {
@@ -70,12 +121,21 @@ function getTagValue(tag: string, obj: GenericObject): any {
     return JSON.parse(extraValue);
   }
 
-  const value = obj[tagParts[0]] ?? "?";
+  const value = obj[tagParts[0]];
+  if (value === null || value === undefined) {
+    return "?";
+  }
+
+  const nestedTag = tagParts.slice(1).join(".");
+  if (nestedTag.length === 0) {
+    return value;
+  }
+
   // check if value is itself an object. If so, recursively call this and remove the first part of the tag
   if (typeof value === "object") {
-    return getTagValue(tagParts.slice(1).join("."), value);
+    return getTagValue(nestedTag, value);
   }
-  return value;
+  return "?";
 }
 
 function applyNewline(text: string): ReactElement[] {
@@ -106,13 +166,13 @@ export function renderLabelContents(template: string, spool: ISpool): ReactEleme
   matches.forEach((match) => {
     if ((match[0].match(/{/g) || []).length == 1) {
       const tag = match[0].replace(/[{}]/g, "");
-      const tagValue = getTagValue(tag, spool);
+      const tagValue = formatTagValue(tag, getTagValue(tag, spool));
       label_text = label_text.replace(match[0], tagValue);
     } else if ((match[0].match(/{/g) || []).length == 2) {
       const structure = match[0].match(/{(.*?){(.*?)}(.*?)}/);
       if (structure != null) {
         const tag = structure[2];
-        const tagValue = getTagValue(tag, spool);
+        const tagValue = formatTagValue(tag, getTagValue(tag, spool));
         if (tagValue == "?") {
           label_text = label_text.replace(match[0], "");
         } else {
